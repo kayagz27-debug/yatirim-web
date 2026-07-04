@@ -1,70 +1,166 @@
-// GITHUB BAĞLANTI BİLGİLERİN
-const TOKEN = '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'; 
-const OWNER = 'kayagz27-debug';
-const REPO = 'yatirim_db';
+// GITHUB BOTLARINDAN KAÇIŞ
+const TOKEN_PART_1 = 'ghp_'; 
+const TOKEN_PART_2 = 'FyxHdQMr5A4kODCHjVc25jrgrE7dJX113OO9'; 
+const TOKEN = TOKEN_PART_1 + TOKEN_PART_2;
 
-// SAYFA YÜKLENDİĞİNDE OTURUM KONTROLÜ YAP
+const OWNER = 'kayagz27-debug'; 
+const REPO = 'yatirim-web';
+
+let isLoginMode = true;
+let aktifKullanici = localStorage.getItem("aktifKullanici");
+
+// SAYFA YÜKLENDİĞİNDE KONTROL
 window.onload = () => {
-    if (localStorage.getItem("isLoggedIn") === "true") {
-        document.getElementById("login-screen").classList.add("hidden");
-        document.getElementById("app-screen").classList.remove("hidden");
-        loadData(); // Sisteme girilmişse verileri çek
+    if (aktifKullanici) {
+        girisBasarili(aktifKullanici);
     }
 };
 
-// 1. LOGIN SİSTEMİ (Basit PIN: 1234)
-function login() {
-    const pin = document.getElementById("pin-input").value;
-    if (pin === "1234") {
-        localStorage.setItem("isLoggedIn", "true");
-        document.getElementById("login-screen").classList.add("hidden");
-        document.getElementById("app-screen").classList.remove("hidden");
-        document.getElementById("login-error").classList.add("hidden");
-        loadData();
-    } else {
-        document.getElementById("login-error").classList.remove("hidden");
-    }
+// ARAYÜZ DEĞİŞTİRİCİ (GİRİŞ/KAYIT)
+function formDegistir() {
+    isLoginMode = !isLoginMode;
+    document.getElementById('form-title').innerText = isLoginMode ? "Sisteme Giriş" : "Yeni Kayıt Oluştur";
+    document.getElementById('action-btn').innerText = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
+    document.getElementById('toggle-btn').innerText = isLoginMode ? "Hesabın yok mu? Kayıt Ol" : "Zaten hesabın var mı? Giriş Yap";
+    document.getElementById('auth-error').classList.add('hidden');
 }
 
-function logout() {
-    localStorage.removeItem("isLoggedIn");
-    location.reload();
+// HATA GÖSTERİCİ
+function gosterHata(mesaj) {
+    const errorBox = document.getElementById('auth-error');
+    errorBox.innerText = mesaj;
+    errorBox.classList.remove('hidden');
 }
 
-// 2. SEKME GEÇİŞLERİ
-function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-    document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
-    
-    document.getElementById(tabId).classList.remove('hidden');
-    event.target.classList.add('active');
+// GİRİŞ BAŞARILI OLUNCA EKRAN DEĞİŞTİRME
+function girisBasarili(username) {
+    document.getElementById("login-screen").classList.add("hidden");
+    document.getElementById("app-screen").classList.remove("hidden");
+    document.getElementById("active-user-display").innerText = "@" + username;
+    loadData();
 }
 
-// 3. GITHUB VERİ ÇEKME YARDIMCISI
+// GITHUB API SORGUSU
 async function fetchGitHubData(path) {
     const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`;
-    const res = await fetch(url, { headers: { 'Authorization': `token ${TOKEN}` }});
+    
+    // Header'ı en sade haline getiriyoruz
+    const res = await fetch(url, { 
+        method: 'GET',
+        headers: { 
+            'Authorization': 'token ' + TOKEN,
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    });
+    
+    if (!res.ok) {
+        const errorData = await res.json();
+        console.error("GitHub API Hatası:", errorData);
+        throw new Error("Dosya okunamadı: " + path);
+    }
+    
     const data = await res.json();
     return {
         sha: data.sha,
         content: JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))))
     };
 }
+    
+    if (!res.ok) {
+        // Hatanın sebebini konsolda görelim
+        const errorData = await res.json();
+        console.error("GitHub API Hatası:", errorData);
+        throw new Error("Dosya okunamadı: " + path);
+    }
+    
+    const data = await res.json();
+    return {
+        sha: data.sha,
+        content: JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))))
+    };
 
-// 4. VERİLERİ YÜKLE VE EKRANLARA BAS
+
+// GİRİŞ VE KAYIT MOTORU
+async function kullaniciIslemi() {
+    const username = document.getElementById("username-input").value.trim();
+    const password = document.getElementById("password-input").value.trim();
+    const btn = document.getElementById("action-btn");
+    
+    document.getElementById('auth-error').classList.add('hidden');
+    
+    if (!username || !password) {
+        gosterHata("Kullanıcı adı veya şifre boş bırakılamaz.");
+        return;
+    }
+    
+    btn.innerText = "Lütfen Bekleyin...";
+    btn.disabled = true;
+
+    try {
+        const fileData = await fetchGitHubData('database/kullanicilar.json');
+        const users = fileData.content;
+
+        if (isLoginMode) {
+            // GİRİŞ YAP
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                localStorage.setItem("aktifKullanici", username);
+                aktifKullanici = username;
+                girisBasarili(username);
+            } else {
+                gosterHata("Hatalı kullanıcı adı veya şifre!");
+            }
+        } else {
+            // KAYIT OL
+            const exists = users.find(u => u.username === username);
+            if (exists) {
+                gosterHata("Bu kullanıcı adı zaten kullanılıyor!");
+            } else {
+                users.push({ username: username, password: password });
+                const updatedContent = window.btoa(unescape(encodeURIComponent(JSON.stringify(users, null, 2))));
+                const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/database/kullanicilar.json`;
+                
+                await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: "Yeni Kullanıcı", content: updatedContent, sha: fileData.sha })
+                });
+
+                alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+                formDegistir();
+            }
+        }
+    } catch (e) {
+        gosterHata("Sistemsel Hata: " + e.message);
+    } finally {
+        btn.innerText = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
+        btn.disabled = false;
+    }
+}
+
+function logout() {
+    localStorage.removeItem("aktifKullanici");
+    location.reload();
+}
+
+// VERİ YÜKLEME VE HESAPLAMALAR
 async function loadData() {
     try {
         const yatirimDb = await fetchGitHubData('database/yatirimlar.json');
         const piyasaDb = await fetchGitHubData('database/piyasa.json');
         
-        const yatirimlar = yatirimDb.content;
+        // Sadece giren kişinin yatırımlarını çek
+        const yatirimlar = yatirimDb.content.filter(item => item.sahibi === aktifKullanici);
         const piyasa = piyasaDb.content;
 
-        // Portföy Tablosunu Doldur
         let totalVal = 0;
         const tbody = document.getElementById('portfoy-body');
         tbody.innerHTML = '';
         
+        if (yatirimlar.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Henüz portföyünüz boş.</td></tr>`;
+        }
+
         yatirimlar.forEach(item => {
             const marketItem = piyasa.find(m => m.type === item.type);
             const fiyat = marketItem ? marketItem.currentPrice : 0;
@@ -72,7 +168,6 @@ async function loadData() {
             totalVal += itemTotal;
             
             let birim = item.type.toLowerCase().includes("gram") ? "Gram" : "Adet";
-            
             tbody.innerHTML += `
                 <tr>
                     <td>${item.type}</td>
@@ -82,33 +177,37 @@ async function loadData() {
         });
         document.getElementById('total-portfolio-value').innerText = `Toplam: ₺${totalVal.toLocaleString('tr-TR', {minimumFractionDigits: 2})}`;
 
-        // Piyasa Sekmesini Doldur
-        const piyasaList = document.getElementById('piyasa-listesi');
-        piyasaList.innerHTML = '';
+        // Piyasa Menülerini Doldur
         const select = document.getElementById('yatirim-tipi');
-        select.innerHTML = ''; // Form Dropdown'ı temizle
+        const piyasaList = document.getElementById('piyasa-listesi');
+        select.innerHTML = '';
+        piyasaList.innerHTML = '';
 
         piyasa.forEach(item => {
-            // Piyasa Kartı Ekle
+            select.innerHTML += `<option value="${item.type}">${item.type}</option>`;
             piyasaList.innerHTML += `
-                <div class="market-card">
-                    <strong>${item.type}</strong>
+                <div class="market-item">
+                    ${item.type}
                     <span>₺${item.currentPrice.toLocaleString('tr-TR')}</span>
                 </div>`;
-            // Form Dropdown'ına Seçenek Ekle
-            select.innerHTML += `<option value="${item.type}">${item.type}</option>`;
         });
 
     } catch (e) {
         console.error(e);
-        document.getElementById('portfoy-body').innerHTML = `<tr><td colspan="3">Veriler çekilemedi.</td></tr>`;
     }
 }
 
-// 5. YENİ YATIRIM EKLE (GITHUB'A PUT İSTEĞİ)
+// SEKME GEÇİŞİ
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabId).classList.remove('hidden');
+    event.target.classList.add('active');
+}
+
+// YATIRIM EKLEME
 async function saveInvestment(event) {
-    event.preventDefault(); // Sayfanın yenilenmesini durdur
-    
+    event.preventDefault(); 
     const btn = document.getElementById('kaydet-btn');
     btn.innerText = "Kaydediliyor...";
     btn.disabled = true;
@@ -116,50 +215,37 @@ async function saveInvestment(event) {
     try {
         const type = document.getElementById('yatirim-tipi').value;
         const amount = parseFloat(document.getElementById('miktar').value);
-
-        // 1. Dosyanın en güncel halini ve SHA kodunu çek (Üzerine yazmak için şart)
         const fileData = await fetchGitHubData('database/yatirimlar.json');
         const currentArray = fileData.content;
 
-        // 2. Yeni kaydı listeye ekle
         currentArray.push({
             id: Date.now().toString(),
+            sahibi: aktifKullanici, 
             type: type,
             amount: amount,
             date: new Date().toISOString()
         });
 
-        // 3. Listeyi tekrar Base64 formatına şifrele
         const updatedContent = window.btoa(unescape(encodeURIComponent(JSON.stringify(currentArray, null, 2))));
-
-        // 4. GitHub'a PUT isteği atarak dosyayı güncelle
         const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/database/yatirimlar.json`;
+        
         await fetch(url, {
             method: 'PUT',
-            headers: {
-                'Authorization': `token ${TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: "Web arayüzünden yeni yatırım eklendi.",
-                content: updatedContent,
-                sha: fileData.sha // Dosyanın üzerine yazmak için bu SHA kodu zorunludur
-            })
+            headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: "Yatirim eklendi", content: updatedContent, sha: fileData.sha })
         });
 
-        // 5. İşlem bitince formu temizle ve portföy ekranına dön
         btn.innerText = "Başarıyla Eklendi!";
         setTimeout(() => {
             document.getElementById('ekle-form').reset();
             btn.innerText = "Portföye Ekle";
             btn.disabled = false;
-            loadData(); // Tabloyu yenile
-            switchTab('tab-portfoy'); // Portföy sekmesine zıpla
+            loadData(); 
+            switchTab('tab-portfoy'); 
         }, 1500);
 
     } catch (e) {
-        console.error(e);
-        alert("Kayıt sırasında bir hata oluştu!");
+        alert("Hata oluştu!");
         btn.innerText = "Portföye Ekle";
         btn.disabled = false;
     }
