@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yatırım Asistanı</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+
+    <div id="login-screen" class="container">
+        <h2>Sisteme Giriş</h2>
+        <input type="password" id="pin-input" placeholder="Giriş Şifresi (1234)">
+        <button onclick="login()">Giriş Yap</button>
+        <p id="login-error" class="error hidden">Hatalı şifre!</p>
+    </div>
+
+    <div id="app-screen" class="container hidden">
+        
+        <nav class="tabs">
+            <button onclick="switchTab('tab-piyasa')">Güncel Piyasa</button>
+            <button onclick="switchTab('tab-portfoy')" class="active">Portföyüm</button>
+            <button onclick="switchTab('tab-ekle')">+ Yatırım Ekle</button>
+            <button onclick="logout()" class="logout-btn">Çıkış</button>
+        </nav>
+
+        <div id="tab-portfoy" class="tab-content">
+            <table id="portfolio-table">
+                <thead>
+                    <tr>
+                        <th>Birikim</th>
+                        <th>Miktar</th>
+                        <th>Güncel Değer</th>
+                    </tr>
+                </thead>
+                <tbody id="portfoy-body">
+                    <tr><td colspan="3" class="loading">Veriler yükleniyor...</td></tr>
+                </tbody>
+            </table>
+            <h3 class="total-value" id="total-portfolio-value">Toplam: ₺0.00</h3>
+        </div>
+
+        <div id="tab-piyasa" class="tab-content hidden">
+            <div id="piyasa-listesi" class="market-grid">
+                </div>
+        </div>
+
+        <div id="tab-ekle" class="tab-content hidden">
+            <form id="ekle-form" onsubmit="saveInvestment(event)">
+                <label>Yatırım Tipi</label>
+                <select id="yatirim-tipi" required>
+                    <option value="">Piyasa verileri bekleniyor...</option>
+                </select>
+
+                <label>Miktar / Adet</label>
+                <input type="number" id="miktar" step="0.01" required placeholder="Örn: 2.5">
+
+                <button type="submit" id="kaydet-btn">Portföye Ekle</button>
+            </form>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
