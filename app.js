@@ -65,20 +65,6 @@ async function fetchGitHubData(path) {
         content: JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))))
     };
 }
-    
-    if (!res.ok) {
-        // Hatanın sebebini konsolda görelim
-        const errorData = await res.json();
-        console.error("GitHub API Hatası:", errorData);
-        throw new Error("Dosya okunamadı: " + path);
-    }
-    
-    const data = await res.json();
-    return {
-        sha: data.sha,
-        content: JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))))
-    };
-
 
 // GİRİŞ VE KAYIT MOTORU
 async function kullaniciIslemi() {
