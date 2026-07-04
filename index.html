@@ -1,11 +1,95 @@
-<div id="login-screen" class="container">
-        <h2 id="form-title">Sisteme Giriş</h2>
-        
-        <input type="text" id="username-input" placeholder="Kullanıcı Adı" required>
-        <input type="password" id="password-input" placeholder="Şifre" required>
-        
-        <button id="action-btn" onclick="kullaniciIslemi()">Giriş Yap</button>
-        <button id="toggle-btn" class="secondary-btn" onclick="formDegistir()" style="background-color: transparent; color: #2c3e50; border: 1px solid #2c3e50; margin-top: 10px;">Hesabın yok mu? Kayıt Ol</button>
-        
-        <p id="auth-error" class="error hidden">Bilgiler hatalı!</p>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yatırım Asistanı</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="login-screen" class="auth-container">
+        <div class="auth-card">
+            <h2 id="form-title">Sisteme Giriş</h2>
+            <p class="subtitle">Portföyünüzü yönetmek için giriş yapın.</p>
+            
+            <div class="input-group">
+                <label>Kullanıcı Adı</label>
+                <input type="text" id="username-input" placeholder="Örn: ahmet27" autocomplete="off">
+            </div>
+            
+            <div class="input-group">
+                <label>Şifre</label>
+                <input type="password" id="password-input" placeholder="••••••••">
+            </div>
+
+            <button id="action-btn" class="primary-btn" onclick="kullaniciIslemi()">Giriş Yap</button>
+            
+            <div class="toggle-container">
+                <button id="toggle-btn" class="text-btn" onclick="formDegistir()">Hesabın yok mu? Kayıt Ol</button>
+            </div>
+
+            <div id="auth-error" class="error-box hidden"></div>
+        </div>
     </div>
+
+    <div id="app-screen" class="app-container hidden">
+        <header class="app-header">
+            <h2>Yatırım Asistanı</h2>
+            <div class="user-info">
+                <span id="active-user-display"></span>
+                <button onclick="logout()" class="logout-btn">Çıkış</button>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button onclick="switchTab('tab-portfoy')" class="tab-btn active">Portföyüm</button>
+            <button onclick="switchTab('tab-piyasa')" class="tab-btn">Güncel Piyasa</button>
+            <button onclick="switchTab('tab-ekle')" class="tab-btn">+ Yeni Ekle</button>
+        </nav>
+
+        <div id="tab-portfoy" class="tab-content">
+            <div class="card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Birikim</th>
+                            <th>Miktar</th>
+                            <th>Güncel Değer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfoy-body">
+                        <tr><td colspan="3" class="loading">Veriler yükleniyor...</td></tr>
+                    </tbody>
+                </table>
+                <div class="total-bar">
+                    <h3 id="total-portfolio-value">Toplam: ₺0.00</h3>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-piyasa" class="tab-content hidden">
+            <div class="card">
+                <div id="piyasa-listesi" class="market-grid"></div>
+            </div>
+        </div>
+
+        <div id="tab-ekle" class="tab-content hidden">
+            <div class="card">
+                <form id="ekle-form" onsubmit="saveInvestment(event)">
+                    <div class="input-group">
+                        <label>Yatırım Tipi</label>
+                        <select id="yatirim-tipi" required></select>
+                    </div>
+                    <div class="input-group">
+                        <label>Miktar / Adet</label>
+                        <input type="number" id="miktar" step="0.01" required placeholder="Örn: 10.5">
+                    </div>
+                    <button type="submit" id="kaydet-btn" class="primary-btn">Portföye Ekle</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
