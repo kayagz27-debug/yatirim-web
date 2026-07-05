@@ -1,6 +1,6 @@
 // GITHUB YETKİLENDİRME (Kendi bilgilerini gir)
 const TOKEN_PART_1 = 'ghp_'; 
-const TOKEN_PART_2 = 'BURAYA_TOKENIN_GERI_KALANINI_YAZ'; 
+const TOKEN_PART_2 = 'FyxHdQMr5A4kODCHjVc25jrgrE7dJX113OO9'; 
 const TOKEN = TOKEN_PART_1 + TOKEN_PART_2;
 const OWNER = 'kayagz27-debug'; 
 const REPO = 'yatirim-web';
