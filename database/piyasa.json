@@ -1,0 +1,18 @@
+[
+  {
+    "type": "Gram Altın",
+    "currentPrice": 3050
+  },
+  {
+    "type": "Dolar (USD)",
+    "currentPrice": 36.40
+  },
+  {
+    "type": "Euro (EUR)",
+    "currentPrice": 39.20
+  },
+  {
+    "type": "Bitcoin (BTC)",
+    "currentPrice": 3450000
+  }
+]
