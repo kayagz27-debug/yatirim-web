@@ -14,12 +14,12 @@
             
             <div class="input-group">
                 <label>Kullanıcı Adı</label>
-                <input type="text" id="username-input" placeholder="Örn: ahmet27" autocomplete="off">
+                <input type="text" id="username-input" placeholder="Örn: ahmet27" autocomplete="off" onkeydown="enterKontrol(event)">
             </div>
             
             <div class="input-group">
                 <label>Şifre</label>
-                <input type="password" id="password-input" placeholder="••••••••">
+                <input type="password" id="password-input" placeholder="••••••••" onkeydown="enterKontrol(event)">
             </div>
 
             <button id="action-btn" class="primary-btn" onclick="kullaniciIslemi()">Giriş Yap</button>
@@ -54,11 +54,12 @@
                         <tr>
                             <th>Birikim</th>
                             <th>Miktar</th>
+                            <th>Saf Gram</th>
                             <th>Güncel Değer</th>
                         </tr>
                     </thead>
                     <tbody id="portfoy-body">
-                        <tr><td colspan="3" class="loading">Veriler yükleniyor...</td></tr>
+                        <tr><td colspan="4" class="loading" style="text-align: center;">Veriler yükleniyor...</td></tr>
                     </tbody>
                 </table>
                 <div class="total-bar">
@@ -69,6 +70,7 @@
 
         <div id="tab-piyasa" class="tab-content hidden">
             <div class="card">
+                <p id="piyasa-guncelleme-bilgisi" style="font-size: 12px; color: #6b7280; text-align: right; margin-bottom: 10px;"></p>
                 <div id="piyasa-listesi" class="market-grid"></div>
             </div>
         </div>
