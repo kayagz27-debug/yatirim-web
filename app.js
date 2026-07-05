@@ -49,11 +49,12 @@ function girisBasarili(username) {
 
 async function fetchGitHubData(path) {
     const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`;
-    const res = await fetch(url, { 
+   const res = await fetch(url, { 
         method: 'GET',
         headers: { 
             'Authorization': 'token ' + TOKEN,
-            'Accept': 'application/vnd.github.v3+json'
+            'Accept': 'application/vnd.github.v3+json',
+            'X-Requested-With': 'XMLHttpRequest' // Bazı CORS engellerini aşar
         }
     });
     
